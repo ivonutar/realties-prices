@@ -7,14 +7,23 @@ out: transformed data
 
 
 class DataEngineer:
+    bool_mapping = {
+        True: 1,
+        False: 0
+    }
 
-    def __init__(self, whole_dataset):
+    def __init__(self, whole_dataset, test_data=False):
         self.whole_dataset = whole_dataset
+        self.test_data = test_data
 
     def engineer(self):
         self.whole_dataset['provision_included'] = self.whole_dataset['price_note'].str.contains('včetně provize')
         self.whole_dataset['provision_included'] = self.whole_dataset['provision_included'].fillna(False)
+        self.__replace('provision_included', self.bool_mapping)
         self.whole_dataset['street'] = self.whole_dataset['street'].str.split(pat=',').str[-1].str.split(' - ').str[-1]
+
+    def __replace(self, feature, replace_with):
+        self.whole_dataset[feature] = self.whole_dataset[feature].replace(replace_with)
 
 
 class DataTransformator:
@@ -28,21 +37,29 @@ class DataTransformator:
                          'Projekt': 7
                          }
 
-    def __init__(self, whole_dataset):
+    bool_mapping = {
+        True: 1,
+        False: 0
+    }
+
+    def __init__(self, whole_dataset, test_data=False):
         self.whole_dataset = whole_dataset
+        self.test_data = test_data
 
     def transform(self):
-        self.__fill_na('price', self.whole_dataset['discount'])
-        self.__fill_na('price', self.whole_dataset['price_note'])
-        self.__str_to_int('price')
-        self.__fill_na('price', self.whole_dataset['price'].median())
+        if not self.test_data:
+            self.__fill_na('price', self.whole_dataset['discount'])
+            self.__fill_na('price', self.whole_dataset['price_note'])
+            self.__str_to_int('price')
+            self.__fill_na('price', self.whole_dataset['price'].median())
         self.__na_to_bool('discount')
 
         self.__fill_na('cellar', '0 m2')
         self.__fill_na('living_area', '0 m2')
         self.__fill_na('floor_area', '0 m2')
         self.__fill_na('parking', 0)
-        self.__fill_na('elevator', 0)
+        self.__fill_na('elevator', False)
+        self.__fill_na('price_of_living', '0')
 
         self.__str_to_int_replace('cellar', ' m2', '')
         self.__str_to_int_replace('living_area', ' m2', '')
@@ -53,6 +70,12 @@ class DataTransformator:
 
         self.__fill_na('condition', 'undefined')
         self.__replace('condition', self.condition_mapping)
+
+        self.__replace('elevator', self.bool_mapping)
+        self.__replace('discount', self.bool_mapping)
+
+        self.__str_to_int('price_of_living')
+        self.__fill_na('price_of_living', self.whole_dataset['price_of_living'].mean())
 
         pass
 

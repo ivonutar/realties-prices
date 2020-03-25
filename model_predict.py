@@ -1,3 +1,4 @@
+from sklearn.preprocessing import StandardScaler
 """
 in: test_data
 out: prediction
@@ -6,13 +7,19 @@ out: prediction
 
 class ModelPredictor:
 
-    def __init__(self, test_data):
+    def __init__(self, test_data, model):
         self.test_data = test_data
-        # load stored model
-        self.model = {}
+        self.model = model
 
     def predict(self):
 
+        self.__standardize()
         predictions = self.model.predict(self.test_data)
 
         return predictions
+
+    def __standardize(self):
+        scaler = StandardScaler()
+        self.test_data = scaler.fit_transform(self.test_data)
+        pass
+

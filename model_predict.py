@@ -7,12 +7,11 @@ out: prediction
 
 class ModelPredictor:
 
-    def __init__(self, test_data, model):
-        self.test_data = test_data
+    def __init__(self, model):
         self.model = model
 
-    def predict(self):
-
+    def predict(self, test_data):
+        self.test_data = test_data
         self.__standardize()
         predictions = self.model.predict(self.test_data)
 

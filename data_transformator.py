@@ -48,10 +48,13 @@ class DataTransformator:
 
     def transform(self):
         if not self.test_data:
+
             self.__fill_na('price', self.whole_dataset['discount'])
             self.__fill_na('price', self.whole_dataset['price_note'])
             self.__str_to_int('price')
             self.__fill_na('price', self.whole_dataset['price'].median())
+            self.__drop_outliers('price', 3000000, 'lt')
+            self.__drop_outliers('price', 25000000, 'gt')
         self.__na_to_bool('discount')
 
         self.__fill_na('cellar', '0 m2')
@@ -94,5 +97,14 @@ class DataTransformator:
 
     def __replace(self, feature, replace_with):
         self.whole_dataset[feature] = self.whole_dataset[feature].replace(replace_with)
+
+    def __drop_outliers(self, feature, than, op_type):
+        if op_type == 'lt':
+            indexNames = self.whole_dataset[self.whole_dataset[feature] <= than].index
+        else:
+            indexNames = self.whole_dataset[self.whole_dataset[feature] > than].index
+
+        # Delete these row indexes from dataFrame
+        self.whole_dataset.drop(indexNames, inplace=True)
 
     # def __change_type(self, feature, to_type):

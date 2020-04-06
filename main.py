@@ -2,6 +2,7 @@ import pandas
 from data_transformator import DataTransformator, DataEngineer
 from model_fitting import ModelFitter
 from model_predict import ModelPredictor
+from data_visual import DataVisualiser
 
 whole_dataset = pandas.read_csv('flat_info_20200321-152203.csv')
 
@@ -22,22 +23,23 @@ features_for_train = [
                       'cellar',
                       'parking',
                       'elevator',
-                      'provision_included']
+                      'provision_included'
+                      ]
 
 features_to_predict = 'price'
 
 model_fitter = ModelFitter(ready_data, features_for_train, features_to_predict)
 model_fitter.fit()
 
-
 test_data = pandas.read_csv('flat_info-test.csv')
-data_transformator = DataTransformator(test_data, test_data=True)
+data_transformator = DataTransformator(test_data, test_data=False)
 data_transformator.transform()
 
-data_engineer = DataEngineer(data_transformator.whole_dataset, test_data=True)
+data_engineer = DataEngineer(data_transformator.whole_dataset, test_data=False)
 data_engineer.engineer()
 
+pandas.DataFrame(data_transformator.whole_dataset).to_csv('test.csv')
+model_predictor = ModelPredictor(model_fitter.model)
 
-model_predictor = ModelPredictor(data_engineer.whole_dataset[features_for_train], model_fitter.model)
-
-print(model_predictor.predict())
+print(data_engineer.whole_dataset['price'])
+print(model_predictor.predict(data_engineer.whole_dataset[features_for_train]))
